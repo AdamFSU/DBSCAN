@@ -7,9 +7,7 @@
 #include <iostream>
 #include "math.h"
 
-Dbscan::Dbscan() {
-
-}
+Dbscan::Dbscan() = default;
 
 std::map<int, std::vector<Point*>> Dbscan::runAlgorithm(std::vector<Point*> points, int eps) {
     int clusters = 0;
@@ -105,8 +103,8 @@ bool Dbscan::isGrouped(Point *point) {
 }
 
 double Dbscan::distFunc(Point *p, Point *q) {
-    std::cout << "Distance function result: " <<
-                sqrt(pow(abs(p->getX() - q->getX()), 2) + pow(abs(p->getY() - q->getY()), 2)) << std::endl;
+//    std::cout << "Distance function result: " <<
+//                sqrt(pow(abs(p->getX() - q->getX()), 2) + pow(abs(p->getY() - q->getY()), 2)) << std::endl;
     return sqrt(pow(abs(p->getX() - q->getX()), 2) + pow(abs(p->getY() - q->getY()), 2));
 }
 
