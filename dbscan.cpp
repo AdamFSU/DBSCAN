@@ -26,7 +26,7 @@ std::map<int, std::vector<Point*>> Dbscan::runAlgorithm(std::vector<Point*> poin
             group.push_back(p);
             // evaluate points neighbors to determine if there are
             // more points in the group
-            std::vector<Point*> neighbors = rangeQuery(points, p, eps);
+            std::vector<Point*> neighbors = rangeQuery(points, group, p, eps);
             // for each point in neighbors
             for(int j = 0; j < neighbors.size(); j++)
             {
@@ -37,7 +37,7 @@ std::map<int, std::vector<Point*>> Dbscan::runAlgorithm(std::vector<Point*> poin
                     // add to group
                     group.push_back(q);
                     // evaluate neighbors
-                    std::vector<Point*>newNeighbors = rangeQuery(points, q, eps);
+                    std::vector<Point*>newNeighbors = rangeQuery(points, group, q, eps, neighbors);
                     // add new neighbors to previous neighbors group
                     neighbors.insert(neighbors.end(), newNeighbors.begin(), newNeighbors.end());
                 }
@@ -49,21 +49,45 @@ std::map<int, std::vector<Point*>> Dbscan::runAlgorithm(std::vector<Point*> poin
     return groups;
 }
 
-std::vector<Point*> Dbscan::rangeQuery(std::vector<Point*> points, Point* Q, int eps) {
+std::vector<Point*> Dbscan::rangeQuery(std::vector<Point*> points,
+                                       std::vector<Point*> group, Point* Q, int eps) {
     // initialize empty vector of neighbors
-    std::vector<Point*> neighbors;
+    std::vector<Point*> newNeighbors;
     for(int i = 0; i < points.size(); i++)
     {
         // for point p in points
         Point* p = points.at(i);
         // if p isn't already grouped and is within eps distance
-        if(p!=Q && !isGrouped(p) && distFunc(p, Q) <= eps)
+        if(p!=Q && !isGrouped(p) && distFunc(p, Q) <= eps &&
+            !std::count(group.begin(), group.end(), p))
         {
             // add it to neighbors
-            neighbors.push_back(p);
+            newNeighbors.push_back(p);
         }
     }
-    return neighbors;
+    return newNeighbors;
+}
+
+std::vector<Point*> Dbscan::rangeQuery(std::vector<Point*> points,
+                                       std::vector<Point*> group, Point* Q, int eps,
+                                       std::vector<Point*> oldNeighbors) {
+    // initialize empty vector of neighbors
+    std::vector<Point*> newNeighbors;
+    for(int i = 0; i < points.size(); i++)
+    {
+        // for point p in points
+        Point* p = points.at(i);
+        // if p isn't already grouped, is within eps distance, and
+        // isn't part of old neighbors
+        if(p!=Q && !isGrouped(p) && distFunc(p, Q) <= eps &&
+            !std::count(oldNeighbors.begin(), oldNeighbors.end(), p) &&
+            !std::count(group.begin(), group.end(), p))
+        {
+            // add it to neighbors
+            newNeighbors.push_back(p);
+        }
+    }
+    return newNeighbors;
 }
 
 bool Dbscan::isGrouped(Point *point) {
@@ -81,13 +105,15 @@ bool Dbscan::isGrouped(Point *point) {
 }
 
 double Dbscan::distFunc(Point *p, Point *q) {
-    return sqrt((p->getX() - q->getX())*2 + (p->getY() - q->getY())*2);
+    std::cout << "Distance function result: " <<
+                sqrt(pow(abs(p->getX() - q->getX()), 2) + pow(abs(p->getY() - q->getY()), 2)) << std::endl;
+    return sqrt(pow(abs(p->getX() - q->getX()), 2) + pow(abs(p->getY() - q->getY()), 2));
 }
 
 void Dbscan::printGroups(std::map<int, std::vector<Point *>> groups) {
     for(const auto &group : groups)
     {
-        std::cout << "{group[" << group.first << "], [";
+        std::cout << "group #" << group.first << ": [";
         std::vector<Point*> groupMembers = group.second;
         for(int i = 0; i < groupMembers.size(); i++)
         {
@@ -98,7 +124,7 @@ void Dbscan::printGroups(std::map<int, std::vector<Point *>> groups) {
             }
             else
             {
-                std::cout << p->getName() << "]}" << std::endl;
+                std::cout << p->getName() << "]" << std::endl;
             }
         }
     }

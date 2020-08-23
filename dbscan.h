@@ -14,7 +14,11 @@ class Dbscan {
 public:
     Dbscan();
     std::map<int, std::vector<Point*>> runAlgorithm(std::vector<Point*> points, int eps);
-    std::vector<Point*> rangeQuery(std::vector<Point*> points, Point* Q, int eps);
+    std::vector<Point*> rangeQuery(std::vector<Point*> points,
+                                   std::vector<Point*> group, Point* Q, int eps);
+    std::vector<Point*> rangeQuery(std::vector<Point*> points,
+                                   std::vector<Point*> group, Point* Q, int eps,
+                                   std::vector<Point*> oldNeighbors);
     bool isGrouped(Point* point);
     double distFunc(Point* p, Point* q);
     void printGroups(std::map<int, std::vector<Point*>> groups);
